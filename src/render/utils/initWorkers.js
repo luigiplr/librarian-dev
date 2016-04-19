@@ -21,14 +21,12 @@ class InitWorkers extends EventEmitter {
       .catch(console.error)
   }
 
-  initSocketServer() {
-    return new Promise((resolve, reject) => {
-      const httpServer = createServer(express())
-      this.socket = socketIO(httpServer)
-      console.info(`Socket Server running on port: ${this.port}`)
-      httpServer.listen(this.port, resolve)
-    })
-  }
+  initSocketServer = () => new Promise((resolve, reject) => {
+    const httpServer = createServer(express())
+    this.socket = socketIO(httpServer)
+    console.info(`Socket Server running on port: ${this.port}`)
+    httpServer.listen(this.port, resolve)
+  })
 
   initSocketEvents() {
     let loggedWorkers = 0
