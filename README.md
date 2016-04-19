@@ -2,14 +2,11 @@
 |:---|
 
 # Librarian
-[![Dependency Status](https://david-dm.org/luigiplr/librarian.svg)](https://david-dm.org/luigiplr/librarian) [![devDependency Status](https://david-dm.org/luigiplr/librarian/dev-status.svg)](https://david-dm.org/luigiplr/librarian#info=devDependencies) [![license](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](LICENSE)
+[![Dependency Status](https://david-dm.org/luigiplr/librarian-dev.svg)](https://david-dm.org/luigiplr/librarian-dev) [![devDependency Status](https://david-dm.org/luigiplr/librarian-dev/dev-status.svg)](https://david-dm.org/luigiplr/librarian-dev#info=devDependencies) [![license](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](LICENSE)
 
 ## Requirements
 - PC running Windows 7, OS X 10.9, Ubuntu 14.x or above.
 - An internet connection
-
-## Where's the beef!
-Pre-built binarys can be found in the [Releases Tab](releases).
 
 <br>
 
@@ -26,9 +23,6 @@ To run the app in development:
 
 ### Building & Release
 - `gulp release`
-
-### Find a bug/issue or simply want to request a new feature?
-[Create a Github issue/feature request!](issues/new)
 
 ## Copyright and License
 Code released under the [GPLv3](LICENSE).
