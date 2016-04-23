@@ -1,26 +1,24 @@
 /**
  * @desc initializes a winston instance w/ user options from config and creates instance logging directory
- * @param {string} level - log level passed to winston, can be any of: error, warn, info, verbose, debug, silly; defaults to debug
+ * @param {string} level - log level passed to winston, can be any of: error, warn, info, verbose, debug, silly; defaults to 'debug'
+ * @param {string} dir - directory path in which to store the logs, takes absolute or relative; defualts to 'logs'
  * @return {object} instance - winston instance
  * @author Luigi Poole
  */
 
 class logUtil extends Logger {
-  constructor(level = 'debug') {
-    //route logs to console for the one or two nano seconds it takes the code below to run
-    super({ level, exitOnError: false })
+  constructor(level = 'debug', dir = 'logs') {
+    //google it.
+    super()
 
-    //assign logPath to os appdata + app name + logs
-    const logPath = path.join(remote.app.getPath('appData'), remote.app.getName(), 'logs')
+    //just in case.
+    const logPath = path.normalize(dir)
 
     //create the logging path if it does not already exsist. (do this synchronously)
     mkdirp(logPath)
 
-    //route uncaught errors within the app to winston for logging
-    process.on('uncaughtException', error => {
-      console.error(error)
-      this.error(error)
-    })
+    //route uncaught errors within the app to winston for logging and then though to console.error
+    process.on('uncaughtException', console.error)
 
     //now that the logging path has been created finnish configuring winston
     this.configure({
@@ -38,7 +36,7 @@ class logUtil extends Logger {
       exitOnError: false
     })
 
-
+    /* Push all logs to a array within the object instance.[logs] */
     this.stream().on('log', ({ level, message, timestamp }) => {
       console[(level === 'error' || level === 'warn' || level === 'info') ? level : 'log'](`[${level}] ${message}`)
       this.logs.push({ level, message, timestamp })
@@ -49,4 +47,4 @@ class logUtil extends Logger {
   logs = []
 }
 
-const log = new logUtil()
+const log = new logUtil('debug', path.join(remote.app.getPath('appData'), remote.app.getName(), 'logs'))

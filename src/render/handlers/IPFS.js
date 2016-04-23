@@ -34,26 +34,37 @@ class IPFSDaemon extends EventEmitter {
 
   /* STATS */
 
-  statsUpdateQueue = async.queue((task, next) => Promise.all([this._getPeers(), this._command('stats/bw')]).then(([peers, bandwidth]) => {
-    this.updateProps({
-      stats: {
-        peers,
-        bandwidth
-      }
-    })
-    next()
-  }).catch(() => next()))
-
-  updateStats() {
+  updateStats = () => new Promise((resolve, reject) => {
     const { api } = this
-    if (!api) this.updateProps({ enabled: false, stats: {}, task: {} })
-    this.statsUpdateQueue.push()
-  }
+    if (!api || !this.propData.enabled) {
+      this.updateProps({ enabled: false, stats: {} })
+      reject('DAEMON DISABLED')
+    } else
+      this._getAllStats().then(([peers, bandwidth, pinned, pinnedSize]) => this.updateProps({
+        stats: {
+          peers,
+          bandwidth,
+          pinned: {
+            size: pinnedSize,
+            files: pinned
+          }
+        }
+      })).then(resolve).catch(() => {
+        this.api = null
+        this.updateProps({ enabled: false, stats: {} })
+        reject('DAEMON HALTED')
+      })
+  })
+
+  _getAllStats = () => Promise.all([this._getPeers(), this._command('stats/bw'), this._getPinned(), this._getPinnedSize()])
 
   _command = (cmd, args = null, opts = {}, qs = null) => new Promise((resolve, reject) => this.api.send(cmd, args, opts, qs, (err, [output]) => err ? reject(err) : resolve(output)))
 
-  _getPeers = () => new Promise((resolve, reject) => this.api.swarm.peers((err, output) => err ? reject(err) : resolve(output.Strings)))
+  _getPeers = () => new Promise((resolve, reject) => this.api.swarm.peers((err, { Strings }) => err ? reject(err) : resolve(Strings)))
 
+  _getPinnedSize = () => new Promise((resolve, reject) => getFolderSize(path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.ipfs/blocks'), (err, size) => err ? reject(err) : resolve(size)))
+
+  _getPinned = () => new Promise((resolve, reject) => this.api.pin.list((err, { Keys }) => err ? reject(err) : resolve(Keys)))
 
   /* CHECKING */
 

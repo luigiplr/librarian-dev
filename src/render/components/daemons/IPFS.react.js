@@ -10,17 +10,34 @@ class IPFSComponent extends Component {
     status: React.PropTypes.string.isRequired,
     stats: React.PropTypes.object.isRequired,
 
+    updateStats: React.PropTypes.func.isRequired,
     enable: React.PropTypes.func.isRequired
   }
 
   state = this.props
 
+  componentDidMount() {
+    this.mounted = true
+    this.statsRefresher()
+  }
+
+  componentWillUnmount() {
+    this.mounted = false
+  }
+
+  statsRefresher() {
+    if (!this.mounted) return
+    const { enabled, updateStats } = this.props
+    const retry = () => _.delay(::this.statsRefresher, 1000)
+    if (enabled)
+      updateStats().then(retry).catch(retry)
+    else
+      retry()
+  }
+
   getStats() {
     const { stats, enabled } = this.props
     if (!stats || !enabled) return null
-
-    console.log(stats)
-
     return (
       <div className="stats">
         <div className="row">
@@ -39,8 +56,8 @@ class IPFSComponent extends Component {
               <div className="pinned">
                 <object type="image/svg+xml" data="images/svg/location-16px_pin.svg" className="logo"/>
                 <span className="text">
-                  <strong>{Object.keys(stats.pinned.total).length}</strong> files pinned
-                  <span className="muted">({stats.pinned.size})</span>
+                  <strong>{Object.keys(stats.pinned.files).length}</strong> files pinned
+                  <span className="muted">({bytes(stats.pinned.size)})</span>
                 </span>
               </div>
             </div>
