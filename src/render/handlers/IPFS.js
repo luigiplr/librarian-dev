@@ -3,7 +3,6 @@ class IPFSDaemon extends EventEmitter {
     super()
 
     this.checkPATH()
-
     this.checkRunning()
   }
 
@@ -53,6 +52,7 @@ class IPFSDaemon extends EventEmitter {
         this.api = null
         this.updateProps({ enabled: false, stats: {} })
         reject('DAEMON HALTED')
+        log.error('IPFS Daemon halted unexpectedly')
       })
   })
 
@@ -83,6 +83,8 @@ class IPFSDaemon extends EventEmitter {
     const api = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
 
     api.version((err, { Version }) => {
+      if (err) return
+
       this.api = api
       log.info(`Found instance of IPFS v.${Version} running on port 5001`)
       this.updateProps({ enabled: true })
@@ -111,6 +113,12 @@ class IPFSDaemon extends EventEmitter {
       case 'linux':
         break
     }
+  }
+
+  /* OPERATIONS */
+
+  download() {
+
   }
 
   install() {
