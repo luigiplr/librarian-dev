@@ -17,7 +17,10 @@ class logUtil extends Logger {
     mkdirp(logPath)
 
     //route uncaught errors within the app to winston for logging
-    process.on('uncaughtException', this.error)
+    process.on('uncaughtException', error => {
+      console.error(error)
+      this.error(error)
+    })
 
     //now that the logging path has been created finnish configuring winston
     this.configure({
@@ -34,6 +37,7 @@ class logUtil extends Logger {
       ],
       exitOnError: false
     })
+
 
     this.stream().on('log', ({ level, message, timestamp }) => {
       console[(level === 'error' || level === 'warn' || level === 'info') ? level : 'log'](`[${level}] ${message}`)

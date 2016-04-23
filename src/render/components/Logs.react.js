@@ -13,7 +13,7 @@ class LogsComponent extends Component {
 
   componentWillUnmount() {
     this.mounted = false
-    log.removeListener('newlog')
+    log.removeAllListeners('newlog')
   }
 
   render() {

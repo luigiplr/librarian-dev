@@ -13,6 +13,11 @@ import async from 'async'
 import { sync as mkdirp } from 'mkdirp'
 import localforage from 'localforage'
 import _ from 'lodash'
+import bytes from 'bytes'
+import getFolderSize from 'get-folder-size'
+
+/* Daemon */
+import ipfsAPI from 'ipfs-api'
 
 /* Logging */
 import { Logger, transports } from 'winston'

@@ -19,8 +19,8 @@ class Framework extends Component {
     log.info(`Librarian initializing..`)
 
     this._initSettings().then(() => {
-      this.setState({ initializing: false })
       this._initDaemonHandlers()
+      this.setState({ initializing: false })
     })
   }
 
@@ -46,7 +46,7 @@ class Framework extends Component {
     let Page = null
     switch (page.toLowerCase()) {
       case 'dashboard':
-        Page = <DashboardPage />
+        Page = <DashboardPage IPFSDaemon={this.IPFSDaemon} />
         break
       case 'preferences':
         Page = null
