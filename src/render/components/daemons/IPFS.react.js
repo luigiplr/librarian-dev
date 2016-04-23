@@ -89,7 +89,7 @@ class IPFSComponent extends Component {
   }
 
   render() {
-    const { enabled, installed, error, checking, initializing, compact, status, enable } = this.props
+    const { enabled, installed, error, checking, initializing, compact, status, downloading, enable, task } = this.props
     return (
       <div className={`section ipfs ${enabled ? 'active' : ''}`}>
         <div className="clearfix">
@@ -97,16 +97,16 @@ class IPFSComponent extends Component {
             <h4 className="title">IPFS</h4>
           </div>
           <div className="pull-right">
-            <input onClick={enable} type="checkbox" className="toggle hidden" checked={enabled}/>
-            <label htmlFor="ipfs-toggle" className="lbl"/>
+            <input type="checkbox" className="toggle hidden" checked={enabled}/>
+            <label onClick={enable} htmlFor="ipfs-toggle" className="lbl"/>
           </div>
-          {(checking || initializing || error) ? (
+          {(checking || initializing || downloading || error) ? (
             <div className="pull-right enabling">
               <span className={`label label-${error ? 'danger' : 'default-flash'}`}>{error || status}</span>
             </div>
           ):null}
         </div>
-
+        {task ? <ProgressComponent {...task} /> : null}
         {enabled ? this.getStats() : null}
 
         {!compact ? (

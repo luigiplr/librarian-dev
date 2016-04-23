@@ -2,6 +2,8 @@ class IPFSDaemon extends EventEmitter {
   constructor() {
     super()
 
+    mkdirp(path.join(this.dataPath))
+
     this.checkPATH()
     this.checkRunning()
   }
@@ -16,14 +18,15 @@ class IPFSDaemon extends EventEmitter {
     enabled: false,
     checking: true,
     initializing: false,
+    downloading: false,
     error: false,
     status: 'Searching for local installation',
     stats: {},
-    task: {
-      text: '',
-      percent: 0
-    }
+    task: false
   }
+
+
+  /* Helper Functions */
 
   updateProps(props) {
     this.propData = Object.assign(this.propData, props)
@@ -31,7 +34,7 @@ class IPFSDaemon extends EventEmitter {
   }
 
 
-  /* STATS */
+  /* Stats */
 
   updateStats = () => new Promise((resolve, reject) => {
     const { api } = this
@@ -66,12 +69,13 @@ class IPFSDaemon extends EventEmitter {
 
   _getPinned = () => new Promise((resolve, reject) => this.api.pin.list((err, { Keys }) => err ? reject(err) : resolve(Keys)))
 
-  /* CHECKING */
+  /* Checking */
 
   checkCached() {
     log.info('Checking existence of IPFS in Librarian daemon store')
 
-    if (fs.existsSync(this.dataPath)) {
+    if (fs.existsSync(path.join(this.dataPath, `ipfs${process.platform === 'win32' ? '.exe' : ''}`))) {
+
 
     } else {
       log.warn('IPFS not found in Librarian daemon store')
@@ -81,12 +85,10 @@ class IPFSDaemon extends EventEmitter {
 
   checkRunning() {
     const api = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
-
-    api.version((err, { Version }) => {
-      if (err) return
-
+    api.version((err, data) => {
+      if (err || !data) return
       this.api = api
-      log.info(`Found instance of IPFS v.${Version} running on port 5001`)
+      log.info(`Found instance of IPFS v.${data.Version} running on port 5001`)
       this.updateProps({ enabled: true })
       this.updateStats()
     })
@@ -98,7 +100,7 @@ class IPFSDaemon extends EventEmitter {
     switch (process.platform) {
       case 'win32':
         exec('ipfs -v', (error, stdout, stderr) => {
-          const outcome = !(error || (stdout || stderr).includes(`ipfs' is not recognized as an internal or external command`))
+          const outcome = !(error || (stdout || stderr).toString().includes(`ipfs' is not recognized as an internal or external command`))
           if (!outcome) {
             log.warn('IPFS not found in PATH')
             this.checkCached()
@@ -115,17 +117,62 @@ class IPFSDaemon extends EventEmitter {
     }
   }
 
-  /* OPERATIONS */
+  /* Operations */
 
   download() {
+    const { platform, arch } = process
 
+    const downloadPath = path.join(this.dataPath, `ipfs${platform === 'win32' ? '.exe' : ''}.part`)
+    const downloadURL = `https://github.com/dloa/alexandria-daemons/raw/master/bins/${platform}/ipfs${platform === 'win32' ? '.exe' : ''}`
+    const download = new Downloader(downloadURL, downloadPath)
+
+    this.updateProps({ downloading: true, status: 'Download Starting..' })
+
+    download.on('progress', ({ speed, percentage, size }) => this.updateProps({
+      task: {
+        text: `${bytes(speed)}/s - ${bytes(size.transferred)} of ${bytes(size.total)}`,
+        percent: percentage * 100
+      },
+      status: `Downloading.. ${Math.round(percentage * 100)}%`
+    }))
+
+    download.once('error', err => {
+      download.removeAllListeners('progress')
+      download.removeAllListeners('finish')
+      console.error(err)
+      this.updateProps({
+        task: false,
+        status: '',
+        downloading: false,
+        error: 'Download Failed'
+      })
+    })
+
+    download.once('finish', () => {
+      download.removeAllListeners('progress')
+      download.removeAllListeners('error')
+      this.updateProps({
+        task: false,
+        status: '',
+        downloading: false
+      })
+      fs.renameSync(path.join(this.dataPath, `ipfs${platform === 'win32' ? '.exe' : ''}.part`), path.join(this.dataPath, `ipfs${platform === 'win32' ? '.exe' : ''}`))
+    })
   }
 
   install() {
-
+    this.download()
   }
 
-  enable() {
+  enable = () => {
+    const { checking, installed } = this.propData
+    if (checking) return
 
+    if (installed) {
+
+
+    } else {
+      this.install()
+    }
   }
 }

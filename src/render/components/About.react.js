@@ -17,8 +17,9 @@ class AboutPage extends Component {
       <div className="col-lg-12">
         <div className="section about">
           <h4 className="title">About</h4>
-          <p>ΛLΞXΛNDRIΛ Librarian v{remote.app.getVersion()}</p>
+          <p>ΛLΞXΛNDRIΛ Librarian v{remote.app.getVersion()} - "{packageJson.release.name}"</p>
           <p>This is a prototype developer build, and is not representative of the final product.</p>
+          <p>Build Date: {packageJson.buildDate}</p>
         </div>
         <div className="section about contributors">
           <h4 className="title">Contributors</h4>

@@ -13,15 +13,22 @@ class Framework extends Component {
   componentWillMount() {
     /* Create local daemon store if not exsists */
     mkdirp(path.join(remote.app.getPath('appData'), remote.app.getName(), 'daemons'))
+    this._initAbout()
   }
 
   componentDidMount() {
+    this.mounted = true
     log.info(`Librarian initializing..`)
 
     this._initSettings().then(() => {
       this._initDaemonHandlers()
       this.setState({ initializing: false })
     })
+  }
+
+  _initAbout() {
+
+
   }
 
   _initDaemonHandlers() {
