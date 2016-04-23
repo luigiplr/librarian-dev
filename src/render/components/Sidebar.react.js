@@ -14,7 +14,7 @@ class AppSidebar extends Component {
   )
 
   render = () => (
-    <ul className="sidebar-nav">
+    <ul id="sidebar" className="sidebar-nav">
       <li className="sidebar-brand">
         <object type="image/svg+xml" data="images/svg/logo-text.svg" className="logo"/>
       </li>

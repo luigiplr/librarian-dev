@@ -7,7 +7,7 @@ class Settings extends EventEmitter {
     _.forEach(this._defaultSettings, (defaultValue, setting) => this._settingsLoader.push({ setting, defaultValue }))
 
     this._settingsLoader.drain = () => {
-      console.info('Settings initialized successfully')
+      log.info('Settings loaded successfully')
       this.emit('initiated')
     }
   }

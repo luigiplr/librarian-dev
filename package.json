@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "alexandria-librarian",
   "version": "0.0.1",
   "author": "Luigi Poole",
   "main": "js/core.js",
@@ -17,18 +17,15 @@
   "dependencies": {
     "async": "^2.0.0-rc.3",
     "electron-window-state": "^2.0.0",
-    "express": "^4.13.4",
     "get-port": "^2.1.0",
-    "gulp-sass": "^2.2.0",
     "localforage": "^1.4.0",
     "lodash": "^4.11.1",
+    "moment": "^2.13.0",
     "node-uuid": "^1.4.7",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
     "request": "^2.69.0",
-    "socket.io": "^1.4.5",
-    "socket.io-client": "^1.4.5",
-    "workerjs": "^0.1.1"
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",
@@ -37,10 +34,11 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.7.2",
+    "gulp-sass": "^2.2.0",
     "bower": "^1.7.7",
     "electron-connect": "^0.3.7",
     "electron-packager": "^7.0.0",
-    "electron-prebuilt": "^0.37.6",
+    "electron-prebuilt": "0.37.7",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-clean-css": "^2.0.5",

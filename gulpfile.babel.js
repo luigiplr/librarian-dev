@@ -26,44 +26,26 @@ let PRODUCTION_BUILD = true
 
 /* Build Tasks */
 
-gulp.task('build-core', () => {
-  gulp.src('src/main/core.js')
-    .pipe(plumber())
-    .pipe(babel())
-    .on('error', err => {
-      gutil.log(gutil.colors.red('[Main Tread Code Compilation Error]'))
-      gutil.log(gutil.colors.red(err.message))
-    })
-    .pipe(concat('core.js'))
-    .pipe(gulp.dest('build/js'))
+gulp.task('build-core', () => gulp.src('src/main/core.js')
+  .pipe(plumber())
+  .pipe(babel())
+  .on('error', err => {
+    gutil.log(gutil.colors.red('[Main Tread Code Compilation Error]'))
+    gutil.log(gutil.colors.red(err.message))
+  })
+  .pipe(gulp.dest('build/js')))
 
-  return gulp.src([
-      'src/main/workers/workers.js',
-      'src/main/workers/*.js'
-    ])
-    .pipe(concat('workers.js'))
-    .pipe(plumber())
-    .pipe(babel())
-    .on('error', err => {
-      gutil.log(gutil.colors.red('[Workers Code Compilation Error]'))
-      gutil.log(gutil.colors.red(err.message))
-    })
-    .pipe(gulp.dest('build/js'))
-})
-
-gulp.task('build-render', () => {
-  return gulp.src('src/render/**/*.js')
-    .pipe(concat('render.js'))
-    .pipe(sourcemaps.init())
-    .pipe(plumber())
-    .pipe(babel())
-    .on('error', err => {
-      gutil.log(gutil.colors.red('[Render Code Compilation Error]'))
-      gutil.log(gutil.colors.red(err.message))
-    })
-    .pipe(gulpif(!PRODUCTION_BUILD, sourcemaps.write()))
-    .pipe(gulp.dest('build/js'))
-})
+gulp.task('build-render', () => gulp.src('src/render/**/*.js')
+  .pipe(concat('render.js'))
+  .pipe(sourcemaps.init())
+  .pipe(plumber())
+  .pipe(babel())
+  .on('error', err => {
+    gutil.log(gutil.colors.red('[Render Code Compilation Error]'))
+    gutil.log(gutil.colors.red(err.message))
+  })
+  .pipe(gulpif(!PRODUCTION_BUILD, sourcemaps.write()))
+  .pipe(gulp.dest('build/js')))
 
 gulp.task('build-styles', () => {
   gulp.src('src/styles/app/main.scss')
@@ -104,7 +86,7 @@ gulp.task('watch-core', () => {
 
 gulp.task('watch-render', () => gulp.watch('src/render/**/*.js', ['build-render', electronDev.reload]))
 
-gulp.task('watch-styles', () => gulp.watch('src/styles/**/*.css', ['build-styles', electronDev.reload]))
+gulp.task('watch-styles', () => gulp.watch('src/styles/**/*', ['build-styles', electronDev.reload]))
 
 gulp.task('watch-static-assets', () => {
   gulp.watch('package.json', ['build-static-assets', electronDev.reload])
@@ -147,7 +129,7 @@ gulp.task('electron-build', callback => electronPackager({
   asar: true,
   cache: 'build_cache',
   overwrite: true,
-  version: '0.37.6'
+  version: packageJson.devDependencies['electron-prebuilt']
 }, (err, appPath) => {
   if (err) console.error(err)
   else console.info(`App built to ${appPath}`)
