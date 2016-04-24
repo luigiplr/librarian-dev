@@ -242,12 +242,13 @@ form {
 .console-output span.error {
   color: #c0392b;
 }
-.console-output span.verbose{
+.console-output span.verbose {
   color: #2ecc71;
 }
 
-.console-output p{
+.console-output p {
   margin-bottom: 5px;
+  white-space: pre-line;
 }
 
 .console-helper {
