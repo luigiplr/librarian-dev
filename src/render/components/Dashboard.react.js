@@ -21,11 +21,11 @@ class DashboardPage extends Component {
 
   render() {
     const { IPFSDaemon } = this.props
-    const { enable, updateStats } = IPFSDaemon
+    const { enable, disable, updateStats } = IPFSDaemon
     const { ipfs } = this.state
     return (
       <div>
-        <IPFSComponent {...ipfs} enable={enable} updateStats={updateStats} compact={false} />
+        <IPFSComponent {...ipfs} enable={enable} disable={disable} updateStats={updateStats} compact={false} />
         <LogsComponent />
       </div>
     )

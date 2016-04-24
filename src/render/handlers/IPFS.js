@@ -56,10 +56,10 @@ class IPFSDaemon extends EventEmitter {
           }
         }
       })).then(resolve).catch(() => {
-        this.api = null
         this.updateProps({ enabled: false, stats: {} })
-        reject('DAEMON HALTED')
+        this.api = null
         log.error('IPFS Daemon halted unexpectedly')
+        reject('DAEMON HALTED')
       })
   })
 
@@ -215,8 +215,14 @@ class IPFSDaemon extends EventEmitter {
     }
   }
 
-  disable() {
+  disable = () => {
 
+    console.log('disabling')
+    if (this.daemon) {
+      this.updateProps({ enabled: false })
+      this.daemon.stop()
+      this.api = null
+    }
   }
 
   start() {
@@ -226,17 +232,25 @@ class IPFSDaemon extends EventEmitter {
     let disabledTriggered = false
 
     log.info(`Starting IPFS Daemon from ${command === 'ipfs' ? 'PATH' : command}`)
+    this.updateProps({ status: 'Initializing..', initializing: true })
 
     const outputParser = output => {
-      console.log(output)
+      if (!enableTriggered && output.includes('Daemon is ready')) {
+        enableTriggered = true
+        this.api = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
+        this.updateProps({ enabled: true, initializing: false, status: '' })
+        this.updateStats()
+      }
+      if (enableTriggered && !disabledTriggered) {
 
+      }
     }
 
     this.daemon = child({
       command,
       args: ['daemon'],
       options: {
-        detached: true,
+        detached: false,
         cwd: dataPath,
         env: process.env
       },

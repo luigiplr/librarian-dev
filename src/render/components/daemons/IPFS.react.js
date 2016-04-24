@@ -11,7 +11,8 @@ class IPFSComponent extends Component {
     stats: React.PropTypes.object.isRequired,
 
     updateStats: React.PropTypes.func.isRequired,
-    enable: React.PropTypes.func.isRequired
+    enable: React.PropTypes.func.isRequired,
+    disable: React.PropTypes.func.isRequired
   }
 
   state = this.props
@@ -30,7 +31,7 @@ class IPFSComponent extends Component {
     const { enabled, updateStats } = this.props
     const retry = () => _.delay(::this.statsRefresher, 1000)
     if (enabled)
-      updateStats().then(retry).catch(retry)
+      updateStats().then(retry, retry)
     else
       retry()
   }
@@ -89,7 +90,7 @@ class IPFSComponent extends Component {
   }
 
   render() {
-    const { enabled, installed, error, checking, initializing, compact, status, downloading, enable, task } = this.props
+    const { enabled, installed, error, checking, initializing, compact, status, downloading, enable, disable, task } = this.props
     return (
       <div className={`section ipfs ${enabled ? 'active' : ''}`}>
         <div className="clearfix">
@@ -98,7 +99,7 @@ class IPFSComponent extends Component {
           </div>
           <div className="pull-right">
             <input type="checkbox" className="toggle hidden" checked={enabled}/>
-            <label onClick={enable} htmlFor="ipfs-toggle" className="lbl"/>
+            <label onClick={enabled ? disable : enable} htmlFor="ipfs-toggle" className="lbl"/>
           </div>
           {(checking || initializing || downloading || error) ? (
             <div className="pull-right enabling">
