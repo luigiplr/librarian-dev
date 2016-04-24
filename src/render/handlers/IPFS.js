@@ -2,19 +2,22 @@ class IPFSDaemon extends EventEmitter {
   constructor() {
     super()
 
-    mkdirp(path.join(this.dataPath))
+    this.dataPath = path.join(remote.app.getPath('appData'), remote.app.getName(), 'daemons', 'ipfs')
+    this.defaultExecPath = path.join(this.dataPath, `ipfs${process.platform === 'win32' ? '.exe' : ''}`)
+
+    mkdirp(this.dataPath)
 
     this.checkPATH()
     this.checkRunning()
   }
 
-  dataPath = path.join(remote.app.getPath('appData'), remote.app.getName(), 'daemons', 'ipfs')
-
   api = null
+  daemon = null
+  execPath = false
 
   propData = {
     installed: false,
-    execPath: undefined,
+    execPath: this.execPath,
     enabled: false,
     checking: true,
     initializing: false,
@@ -71,12 +74,26 @@ class IPFSDaemon extends EventEmitter {
 
   /* Checking */
 
+  checkExec = execPath => new Promise((resolve, reject) => execFile(execPath, ['version'], {
+    cwd: this.dataPath
+  }, (error, stdout, stderr) => (!error && stdout.toString().includes('ipfs version')) ? resolve() : reject(error || stderr)))
+
   checkCached() {
     log.info('Checking existence of IPFS in Librarian daemon store')
 
-    if (fs.existsSync(path.join(this.dataPath, `ipfs${process.platform === 'win32' ? '.exe' : ''}`))) {
-
-
+    if (fs.existsSync(this.defaultExecPath)) {
+      this.checkExec(this.defaultExecPath)
+        .then(() => {
+          log.info('IPFS found in Librarian daemon store')
+          this.execPath = this.defaultExecPath
+          this.updateProps({ checking: false, installed: true })
+        })
+        .catch(err => {
+          console.log(err)
+          log.error('Corrupt IPFS found in Librarian daemon store; Removing..')
+          fs.unlink(path.join(this.dataPath, `ipfs${process.platform === 'win32' ? '.exe' : ''}`))
+          this.updateProps({ checking: false })
+        })
     } else {
       log.warn('IPFS not found in Librarian daemon store')
       this.updateProps({ checking: false })
@@ -99,14 +116,15 @@ class IPFSDaemon extends EventEmitter {
 
     switch (process.platform) {
       case 'win32':
-        exec('ipfs -v', (error, stdout, stderr) => {
+        exec('ipfs version', (error, stdout, stderr) => {
           const outcome = !(error || (stdout || stderr).toString().includes(`ipfs' is not recognized as an internal or external command`))
           if (!outcome) {
-            log.warn('IPFS not found in PATH')
+            log.warn('IPFS not found in PATH; Checking daemon store...')
             this.checkCached()
           } else {
             log.info('IPFS found in PATH')
-            this.updateProps({ checking: false })
+            this.execPath = 'ipfs'
+            this.updateProps({ checking: false, installed: true })
           }
         })
         break
@@ -122,7 +140,7 @@ class IPFSDaemon extends EventEmitter {
   download() {
     const { platform, arch } = process
 
-    const downloadPath = path.join(this.dataPath, `ipfs${platform === 'win32' ? '.exe' : ''}.part`)
+    const downloadPath = this.defaultExecPath + '.part'
     const downloadURL = `https://github.com/dloa/alexandria-daemons/raw/master/bins/${platform}/ipfs${platform === 'win32' ? '.exe' : ''}`
     const download = new Downloader(downloadURL, downloadPath)
 
@@ -156,23 +174,79 @@ class IPFSDaemon extends EventEmitter {
         status: '',
         downloading: false
       })
-      fs.renameSync(path.join(this.dataPath, `ipfs${platform === 'win32' ? '.exe' : ''}.part`), path.join(this.dataPath, `ipfs${platform === 'win32' ? '.exe' : ''}`))
+      this.install()
     })
   }
 
   install() {
-    this.download()
+    log.info('Installing IPFS Daemon')
+
+    fs.renameSync(this.defaultExecPath + '.part', this.defaultExecPath)
+    fs.chmodSync(this.defaultExecPath, '755')
+
+    execFile(this.defaultExecPath, ['init'], {
+      cwd: this.dataPath
+    }, (error, stdout, stderr) => {
+      log.verbose(error || stdout)
+
+      this.updateProps({ installed: true, execPath: this.defaultExecPath })
+      this.enable()
+    })
   }
 
   enable = () => {
-    const { checking, installed } = this.propData
-    if (checking) return
+    log.info('Enabling IPFS Daemon')
+    const { checking, installed, enabled } = this.propData
+    if (checking || enabled) return
 
     if (installed) {
-
-
+      this.start()
     } else {
-      this.install()
+      log.info('Local IPFS Daemon unfound; Downloading..')
+      this.download()
     }
+  }
+
+  disable() {
+
+  }
+
+  start() {
+    const { execPath, dataPath, defaultExecPath } = this
+    const command = execPath || defaultExecPath
+    let enableTriggered = false
+    let disabledTriggered = false
+
+    log.info(`Starting IPFS Daemon from ${command === 'ipfs' ? 'PATH' : command}`)
+
+    const outputParser = output => {
+      console.log(output)
+
+    }
+
+    this.daemon = child({
+      command,
+      args: ['daemon'],
+      options: {
+        detached: true,
+        cwd: dataPath,
+        env: process.env
+      },
+      autoRestart: false,
+      cbRestart: pid => console.log(`IPFS restarting with PID: ${pid}`),
+      cbStdout: data => {
+        log.verbose(`IPFS: ${data.toString()}`)
+        outputParser(data.toString())
+      },
+      cbStderr: data => {
+        log.verbose(`IPFS: ${data.toString()}`)
+        outputParser(data.toString())
+      },
+      cbClose: exitCode => {
+        log.verbose(`IPFS Exiting with code ${exitCode.toString()}`)
+      }
+    })
+
+    this.daemon.start()
   }
 }

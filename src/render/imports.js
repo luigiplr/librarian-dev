@@ -3,7 +3,7 @@ import { shell, remote } from 'electron'
 
 /* Node */
 import { EventEmitter } from 'events'
-import { exec } from 'child_process'
+import { exec, execFile } from 'child_process'
 import path from 'path'
 import fs from 'fs'
 
@@ -18,6 +18,7 @@ import bytes from 'bytes'
 import getFolderSize from 'get-folder-size'
 import request from 'request'
 import requestProgress from 'request-progress'
+import child from 'child'
 
 /* Daemon */
 import ipfsAPI from 'ipfs-api'

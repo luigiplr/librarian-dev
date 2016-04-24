@@ -17,6 +17,7 @@
   "dependencies": {
     "async": "^2.0.0-rc.3",
     "bytes": "^2.3.0",
+    "child": "0.0.3",
     "electron-window-state": "^2.0.0",
     "get-folder-size": "^1.0.0",
     "get-port": "^2.1.0",
