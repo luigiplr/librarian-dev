@@ -121,25 +121,17 @@ class IPFSDaemon extends EventEmitter {
   checkPATH() {
     log.info('Checking existence of IPFS in PATH')
 
-    switch (process.platform) {
-      case 'win32':
-        exec('ipfs version', (error, stdout, stderr) => {
-          const outcome = !(error || (stdout || stderr).toString().includes(`ipfs' is not recognized as an internal or external command`))
-          if (!outcome) {
-            log.warn('IPFS not found in PATH; Checking daemon store...')
-            this.checkCached()
-          } else {
-            log.info('IPFS found in PATH')
-            this.execPath = 'ipfs'
-            this.updateProps({ checking: false, installed: true })
-          }
-        })
-        break
-      case 'darwin':
-        break
-      case 'linux':
-        break
-    }
+    exec('ipfs version', (error, stdout, stderr) => {
+      const outcome = !(error || (stdout || stderr).toString().includes(`ipfs' is not recognized as an internal or external command`))
+      if (!outcome) {
+        log.warn('IPFS not found in PATH; Checking daemon store...')
+        this.checkCached()
+      } else {
+        log.info('IPFS found in PATH')
+        this.execPath = 'ipfs'
+        this.updateProps({ checking: false, installed: true })
+      }
+    })
   }
 
   /* Operations */

@@ -109,7 +109,6 @@ class IPFSComponent extends Component {
         </div>
         {task ? <ProgressComponent {...task} /> : null}
         {enabled ? this.getStats() : null}
-
         {!compact ? (
           <div className="detail">
             <p>The InterPlanetary File System (IPFS) is a new hypermedia distribution protocol, addressed by content and identities.
