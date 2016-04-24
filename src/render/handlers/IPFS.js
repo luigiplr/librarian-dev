@@ -216,12 +216,19 @@ class IPFSDaemon extends EventEmitter {
   }
 
   disable = () => {
-
-    console.log('disabling')
-    if (this.daemon) {
+    const setDisabled = () => {
       this.updateProps({ enabled: false })
       this.daemon.stop()
       this.api = null
+    }
+
+    if (this.daemon) {
+      setDisabled()
+    } else {
+      xps.list().fork(console.error, list => {
+        const { pid } = _.filter(list, ({ name }) => name.includes('ipfs'))[0]
+        xps.kill(pid).fork(console.error, setDisabled)
+      })
     }
   }
 

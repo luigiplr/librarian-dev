@@ -1,17 +1,36 @@
 class AboutPage extends Component {
 
-  static propTypes = {
-    license: React.PropTypes.string,
-    contributors: React.PropTypes.array
+  state = {
+    license: '',
+    contributors: [{
+      name: 'Luigi Poole',
+      github: 'luigiplr',
+      email: 'luigipoole@outlook.com'
+    }, {
+      name: 'Skylar Ostler',
+      github: 'ostlerdev',
+      email: 'ostlerdev@me.com'
+    }, {
+      name: 'Dana Ast',
+      github: 'dmxt',
+      email: 'dana@dmxt.org'
+    }]
   }
 
-  static defaultProps = {
-    license: '',
-    contributors: []
+  componentWillMount() {
+    fs.readFile('./LICENSE', 'utf8', (err, license = 'Error loading license') => this.mounted ? this.setState({ license }) : (this.state.license = license))
+  }
+
+  componentDidMount() {
+    this.mounted = true
+  }
+
+  componentWillUnmount() {
+    this.mounted = false
   }
 
   render() {
-    const { contributors, license } = this.props
+    const { contributors, license } = this.state
 
     return (
       <div className="col-lg-12">
@@ -24,12 +43,14 @@ class AboutPage extends Component {
         <div className="section about contributors">
           <h4 className="title">Contributors</h4>
           {
-            contributors.map(({url, email, name}, key) => (
+            contributors.map(({github, email, name}, key) => (
               <p key={key}>
-                <a onClick={() => shell.openExternal(url)} className="svg btn btn-github">
-                  <object type="image/svg+xml" data="images/svg/social-16px_logo-github.svg"/>
-                </a>
-                {name} <span className="muted">{email}</span>
+                {github ? (
+                  <a onClick={() => shell.openExternal(`https://github.com/${github}`)} className="svg btn btn-github">
+                    <object type="image/svg+xml" data="images/svg/social-16px_logo-github.svg"/>
+                  </a>
+                ) : null}
+                {name} {email ? <span className="muted">{email}</span> : null}
               </p>
             ))
           }

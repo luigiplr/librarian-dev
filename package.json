@@ -31,7 +31,8 @@
     "request": "^2.72.0",
     "request-progress": "^2.0.1",
     "semver": "^5.1.0",
-    "winston": "^2.2.0"
+    "winston": "^2.2.0",
+    "xps": "^1.0.2"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",

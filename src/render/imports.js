@@ -20,6 +20,7 @@ import request from 'request'
 import requestProgress from 'request-progress'
 import child from 'child'
 import semver from 'semver'
+import xps from 'xps'
 
 /* Daemon */
 import ipfsAPI from 'ipfs-api'
