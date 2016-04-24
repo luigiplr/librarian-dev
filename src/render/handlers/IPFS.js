@@ -219,6 +219,7 @@ class IPFSDaemon extends EventEmitter {
     const setDisabled = () => {
       this.updateProps({ enabled: false })
       this.daemon.stop()
+      this.daemon = null
       this.api = null
     }
 
@@ -226,7 +227,7 @@ class IPFSDaemon extends EventEmitter {
       setDisabled()
     } else {
       xps.list().fork(console.error, list => {
-        const { pid } = _.filter(list, ({ name }) => name.includes('ipfs'))[0]
+        const { pid } = list.filter(({ name }) => name.includes('ipfs'))[0]
         xps.kill(pid).fork(console.error, setDisabled)
       })
     }
@@ -264,16 +265,16 @@ class IPFSDaemon extends EventEmitter {
       autoRestart: false,
       cbRestart: pid => console.log(`IPFS restarting with PID: ${pid}`),
       cbStdout: data => {
+        if (!data) return
         log.verbose(`IPFS: ${data.toString()}`)
         outputParser(data.toString())
       },
       cbStderr: data => {
+        if (!data) return
         log.verbose(`IPFS: ${data.toString()}`)
         outputParser(data.toString())
       },
-      cbClose: exitCode => {
-        log.verbose(`IPFS Exiting with code ${exitCode.toString()}`)
-      }
+      cbClose: exitCode => log.verbose(`IPFS Exiting with code ${exitCode ? exitCode.toString() : 0}`)
     })
 
     this.daemon.start()
