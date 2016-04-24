@@ -19,6 +19,7 @@ import getFolderSize from 'get-folder-size'
 import request from 'request'
 import requestProgress from 'request-progress'
 import child from 'child'
+import semver from 'semver'
 
 /* Daemon */
 import ipfsAPI from 'ipfs-api'

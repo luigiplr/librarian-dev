@@ -25,7 +25,8 @@ class IPFSDaemon extends EventEmitter {
     error: false,
     status: 'Searching for local installation',
     stats: {},
-    task: false
+    task: false,
+    disabled: false
   }
 
 
@@ -104,10 +105,16 @@ class IPFSDaemon extends EventEmitter {
     const api = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
     api.version((err, data) => {
       if (err || !data) return
-      this.api = api
-      log.info(`Found instance of IPFS v.${data.Version} running on port 5001`)
-      this.updateProps({ enabled: true })
-      this.updateStats()
+      const { Version } = data
+      if (semver.gte(Version, '0.4.0')) {
+        this.api = api
+        log.info(`Found instance of IPFS v.${Version} running on port 5001`)
+        this.updateProps({ enabled: true })
+        this.updateStats()
+      } else {
+        log.error(`Incompatible instance of IPFS (v.${Version}) running on port 5001, Please upgrade to 0.4.0+`)
+        this.updateProps({ error: 'Incompatible instance detected', disabled: true })
+      }
     })
   }
 
@@ -195,9 +202,10 @@ class IPFSDaemon extends EventEmitter {
   }
 
   enable = () => {
+    const { checking, installed, enabled, disabled } = this.propData
+    if (checking || enabled || disabled) return
+
     log.info('Enabling IPFS Daemon')
-    const { checking, installed, enabled } = this.propData
-    if (checking || enabled) return
 
     if (installed) {
       this.start()
